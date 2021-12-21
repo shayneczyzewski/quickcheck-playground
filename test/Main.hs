@@ -21,9 +21,9 @@ data ValidProgram = ValidProgram
 
 instance Arbitrary ValidProgram where
   arbitrary = do
-    let app = arbitrary
+    app <- arbitrary
     (pages, routes) <- genPagesRoutes
-    ValidProgram <$> app <*> return pages <*> return routes
+    return $ ValidProgram app pages routes
 
 data App = App
   { appIdentifier :: ElementIdentifier,
@@ -51,8 +51,6 @@ data Route = Route
   }
   deriving (Show)
 
--- TODO: Any better way to generate Pages and Routes
--- such that the Routes reference generated Pages?
 genPagesRoutes :: Gen ([Page], [Route])
 genPagesRoutes = do
   pages <- arbitrary :: Gen [Page]
