@@ -1,6 +1,5 @@
 module Main where
 
-import Data.Maybe (catMaybes)
 import Test.QuickCheck
   ( Arbitrary (arbitrary),
     Gen,
@@ -15,8 +14,8 @@ import Test.QuickCheck
 -- Not sure how to best to generate valid and invalid yet.
 data ValidProgram = ValidProgram
   { app :: App,
-    pages :: Maybe [Page],
-    routes :: Maybe [Route]
+    pages :: [Page],
+    routes :: [Route]
   }
   deriving (Show)
 
@@ -29,7 +28,7 @@ instance Arbitrary ValidProgram where
 data App = App
   { appIdentifier :: ElementIdentifier,
     titleProp :: String,
-    headProp :: Maybe [String]
+    headProp :: [String]
   }
   deriving (Show)
 
@@ -54,17 +53,17 @@ data Route = Route
 
 -- TODO: Any better way to generate Pages and Routes
 -- such that the Routes reference generated Pages?
-genPagesRoutes :: Gen (Maybe [Page], Maybe [Route])
+genPagesRoutes :: Gen ([Page], [Route])
 genPagesRoutes = do
-  pages <- arbitrary :: Gen (Maybe [Page])
+  pages <- arbitrary :: Gen [Page]
   routes <-
-    case pages of
-      Nothing -> return Nothing
-      Just pages' -> Just <$> listOf (Route <$> urlGen <*> pageIdentifierGen pages')
+    if null pages
+      then return []
+      else listOf (Route <$> urlGen <*> pageIdentifierGen pages)
   return (pages, routes)
   where
     urlGen = listOf1 . elements $ '/' : ['a' .. 'z']
-    pageIdentifierGen pages' = elements (map pageIdentifier pages')
+    pageIdentifierGen pages = elements (map pageIdentifier pages)
 
 newtype ElementIdentifier = ElementIdentifier {elementIdentifier :: String} deriving (Show)
 
